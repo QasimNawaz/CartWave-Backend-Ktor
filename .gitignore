@@ -37,3 +37,6 @@ docker-compose.yml
 
 # Environment variable files (example: .env)
 *.env
+
+# Ignore TOML files
+*.toml
