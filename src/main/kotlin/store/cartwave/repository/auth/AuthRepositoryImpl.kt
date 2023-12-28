@@ -20,7 +20,7 @@ class AuthRepositoryImpl(
                 user.authToken = token
                 BaseResponse.SuccessResponse(data = user, message = USER_REGISTRATION_SUCCESS)
             } else {
-                BaseResponse.ErrorResponse(GENERIC_ERROR)
+                BaseResponse.ErrorResponse(message = GENERIC_ERROR)
             }
         }
     }
@@ -32,7 +32,7 @@ class AuthRepositoryImpl(
             user.authToken = token
             BaseResponse.SuccessResponse(data = user, message = USER_LOGIN_SUCCESS)
         } else {
-            BaseResponse.ErrorResponse(USER_LOGIN_FAILURE)
+            BaseResponse.ErrorResponse(message = USER_LOGIN_FAILURE)
         }
     }
 

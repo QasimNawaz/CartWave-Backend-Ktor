@@ -1,16 +1,18 @@
 package store.cartwave.service.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
 import store.cartwave.db.DatabaseFactory.dbQuery
 import store.cartwave.db.ProductTable
+import store.cartwave.db.rowToProduct
+import store.cartwave.db.rowToProductWithQty
 import store.cartwave.models.AddProductParams
+import store.cartwave.models.Categories
 import store.cartwave.models.Product
+import store.cartwave.models.ProductsByCategory
 
 class ProductServiceImpl : ProductService {
     override suspend fun addProducts(params: List<AddProductParams>): String {
@@ -69,56 +71,64 @@ class ProductServiceImpl : ProductService {
         return "Added: ${statement?.insertedCount}"
     }
 
-    override suspend fun getProductsWithPaging(pageNumber: Int, pageSize: Int): List<Product> {
+    override suspend fun getProduct(userId: Int, productId: Int): Product {
         return dbQuery {
-            ProductTable.slice(
-                ProductTable.id,
-                ProductTable.actualPrice,
-                ProductTable.averageRating,
-                ProductTable.brand,
-                ProductTable.category,
-                ProductTable.crawledAt,
-                ProductTable.description,
-                ProductTable.discount,
-                ProductTable.images,
-                ProductTable.outOfStock,
-                ProductTable.pid,
-                ProductTable.productDetails,
-                ProductTable.seller,
-                ProductTable.sellingPrice,
-                ProductTable.subCategory,
-                ProductTable.title,
-                ProductTable.url,
-            )
-                .selectAll()
-                .orderBy(ProductTable.id)
-                .limit(pageSize, offset = ((pageNumber - 1) * pageSize).toLong())
-                .map { row ->
-                    rowToProduct(row)
+            ProductTable.select {
+                ProductTable.id eq productId
+            }.map { row ->
+                row.rowToProductWithQty(userId)
+            }.first()
+        }
+    }
+
+    override suspend fun getProductsWithPaging(userId: Int, pageNumber: Int, pageSize: Int): List<Product> {
+        return dbQuery {
+
+            ProductTable.selectAll().orderBy(ProductTable.id)
+                .limit(pageSize, offset = ((pageNumber - 1) * pageSize).toLong()).map { row ->
+                    row.rowToProduct(userId)
                 }
         }
     }
 
-    private fun rowToProduct(row: ResultRow): Product {
-        val objectMapper = jacksonObjectMapper()
-        return Product(
-            id = row[ProductTable.id],
-            actualPrice = row[ProductTable.actualPrice],
-            averageRating = row[ProductTable.averageRating],
-            brand = row[ProductTable.brand],
-            category = row[ProductTable.category],
-            crawledAt = row[ProductTable.crawledAt],
-            description = row[ProductTable.description],
-            discount = row[ProductTable.discount],
-            images = objectMapper.readValue(row[ProductTable.images].toString()),
-            outOfStock = row[ProductTable.outOfStock],
-            pid = row[ProductTable.pid],
-            productDetails = objectMapper.readValue(row[ProductTable.productDetails].toString()),
-            seller = row[ProductTable.seller],
-            sellingPrice = row[ProductTable.sellingPrice],
-            subCategory = row[ProductTable.subCategory],
-            title = row[ProductTable.title],
-            url = row[ProductTable.url]
-        )
+    override suspend fun getProductsByCategory(
+        userId: Int, category: String, pageNumber: Int, pageSize: Int
+    ): List<Product> {
+        return dbQuery {
+            val query = if (category == "All") {
+                ProductTable.selectAll()
+            } else {
+                ProductTable.select {
+                    (ProductTable.category eq category)
+                }
+            }
+            query.orderBy(ProductTable.id).limit(pageSize, offset = ((pageNumber - 1) * pageSize).toLong()).map { row ->
+                row.rowToProduct(userId)
+            }
+        }
+    }
+
+    override suspend fun getProductsGroupBySubCategory(userId: Int, category: String): List<ProductsByCategory> {
+        val productsByCategory = mutableListOf<ProductsByCategory>()
+        dbQuery {
+            val query = if (category == "All") {
+                ProductTable.slice(ProductTable.subCategory).selectAll()
+            } else {
+                ProductTable.slice(ProductTable.subCategory).select { (ProductTable.category eq category) }
+            }
+            val categories = query.map { it[ProductTable.subCategory] }.distinct()
+            println("categoriesCount: ${categories.size}")
+            for (category in categories) {
+                val products = ProductTable.select { ProductTable.subCategory eq category }.limit(6).map { row ->
+                    row.rowToProduct(userId)
+                }
+                productsByCategory.add(ProductsByCategory(category = category, products = products))
+            }
+        }
+        return productsByCategory
+    }
+
+    override suspend fun getAllCategories(): List<Categories> {
+        TODO("Not yet implemented")
     }
 }

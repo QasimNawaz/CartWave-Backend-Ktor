@@ -24,7 +24,7 @@ fun Application.configureSecurity() {
             challenge { defaultScheme, realm ->
                 call.respond(
                     status = HttpStatusCode.Unauthorized,
-                    message = BaseResponse.ErrorResponse(INVALID_AUTHENTICATION_TOKEN)
+                    message = INVALID_AUTHENTICATION_TOKEN
                 )
             }
         }

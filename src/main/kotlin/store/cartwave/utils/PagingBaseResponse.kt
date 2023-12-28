@@ -6,6 +6,7 @@ sealed class PagingBaseResponse<T>(
     val statusCode: HttpStatusCode = HttpStatusCode.OK
 ) {
     data class SuccessResponse<T>(
+        val success: Boolean = true,
         val data: T? = null,
         val message: String? = null,
         val pageSize: Int = 0,
@@ -14,7 +15,7 @@ sealed class PagingBaseResponse<T>(
     ) : PagingBaseResponse<T>()
 
     data class ErrorResponse<T>(
-        val exception: T? = null,
+        val success: Boolean = false,
         val message: String? = null,
         val pageSize: Int = 0,
         val pageNumber: Int = 0,

@@ -17,5 +17,7 @@ data class Product(
     val sellingPrice: String,
     val subCategory: String,
     val title: String,
-    val url: String
+    val url: String,
+    val isFavourite: Boolean,
+    val cartQty: Int
 )

@@ -1,4 +1,4 @@
-val ktor_version: String by project
+    val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val exposed_version: String by project
@@ -8,17 +8,22 @@ val postgres_version: String by project
 plugins {
     kotlin("jvm") version "1.9.21"
     id("io.ktor.plugin") version "2.3.6"
-    application
 }
 
 group = "store.cartwave"
 version = "0.0.1"
 
 application {
-    mainClass.set("com.cartwave.Applicationkt")
+    mainClass.set("io.ktor.server.netty.EngineMain")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("${project.name}-${version}-docker-image.jar")
+    }
 }
 
 sourceSets["main"].resources.srcDirs("resources")
