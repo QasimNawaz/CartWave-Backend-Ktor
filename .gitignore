@@ -1,0 +1,39 @@
+# Gradle specific
+.gradle/
+build/
+
+# IntelliJ IDEA specific
+.idea/
+*.iml
+out/
+
+# Eclipse specific
+.settings/
+.classpath
+.project
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and local generated files
+log/
+*.log
+*.log.*
+*.tmp
+
+# Dependency directories
+libs/
+dependencies/
+
+# Docker images and containers
+*.tar.gz
+docker-compose.yml
+*.tar
+*.json
+
+# JAR files
+*.jar
+
+# Environment variable files (example: .env)
+*.env
