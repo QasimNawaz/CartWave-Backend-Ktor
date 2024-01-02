@@ -1,11 +1,13 @@
 package store.cartwave.service.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import store.cartwave.config.DATA_EXIST
+import store.cartwave.config.DATA_INSERTED
 import store.cartwave.db.DatabaseFactory.dbQuery
+import store.cartwave.db.FavouriteTable
 import store.cartwave.db.ProductTable
 import store.cartwave.db.rowToProduct
 import store.cartwave.db.rowToProductWithQty
@@ -48,27 +50,32 @@ class ProductServiceImpl : ProductService {
         var statement: InsertStatement<Number>? = null
         val objectMapper = ObjectMapper()
         dbQuery {
-            statement = ProductTable.insert {
-                it[actualPrice] = params.actual_price
-                it[averageRating] = params.average_rating
-                it[brand] = params.brand
-                it[category] = params.category
-                it[crawledAt] = params.crawled_at
-                it[description] = params.description
-                it[discount] = params.discount
-                it[images] = objectMapper.writeValueAsString(params.images) // Convert list to JSON string
-                it[outOfStock] = params.out_of_stock
-                it[pid] = params.pid
-                it[productDetails] =
-                    objectMapper.writeValueAsString(params.product_details) // Convert map to JSON string
-                it[seller] = params.seller
-                it[sellingPrice] = params.selling_price
-                it[subCategory] = params.sub_category
-                it[title] = params.title
-                it[url] = params.url
+            val alreadyExist = ProductTable.select {
+                (ProductTable.pid eq params.pid)
+            }.count() > 0
+            if (!alreadyExist) {
+                statement = ProductTable.insert {
+                    it[actualPrice] = params.actual_price
+                    it[averageRating] = params.average_rating
+                    it[brand] = params.brand
+                    it[category] = params.category
+                    it[crawledAt] = params.crawled_at
+                    it[description] = params.description
+                    it[discount] = params.discount
+                    it[images] = objectMapper.writeValueAsString(params.images) // Convert list to JSON string
+                    it[outOfStock] = params.out_of_stock
+                    it[pid] = params.pid
+                    it[productDetails] =
+                        objectMapper.writeValueAsString(params.product_details) // Convert map to JSON string
+                    it[seller] = params.seller
+                    it[sellingPrice] = params.selling_price
+                    it[subCategory] = params.sub_category
+                    it[title] = params.title
+                    it[url] = params.url
+                }
             }
         }
-        return "Added: ${statement?.insertedCount}"
+        return if (statement?.insertedCount != null) DATA_INSERTED else DATA_EXIST
     }
 
     override suspend fun getProduct(userId: Int, productId: Int): Product {

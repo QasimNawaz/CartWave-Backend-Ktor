@@ -25,7 +25,7 @@ class ProductRepositoryImpl(private val productService: ProductService) : Produc
 
     override suspend fun addProduct(params: AddProductParams): BaseResponse<Any> {
         val response = productService.addProduct(params)
-        return if (response.isEmpty()) {
+        return if (response.isNotEmpty()) {
             BaseResponse.SuccessResponse(data = response, message = DATA_INSERTED)
         } else {
             BaseResponse.ErrorResponse(message = GENERIC_ERROR)

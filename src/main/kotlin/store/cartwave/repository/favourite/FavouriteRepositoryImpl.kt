@@ -44,10 +44,7 @@ class FavouriteRepositoryImpl(private val favouriteService: FavouriteService) : 
                     FavouriteTable.select { FavouriteTable.userId eq userId }.count()
                 }
                 PagingBaseResponse.SuccessResponse(
-                    data = response,
-                    pageNumber = pageNumber,
-                    pageSize = pageSize,
-                    totalCount = totalCount
+                    data = response, pageNumber = pageNumber, pageSize = pageSize, totalCount = totalCount
                 )
             } else {
                 PagingBaseResponse.ErrorResponse(message = NO_DATA_FOUND, pageNumber = pageNumber, pageSize = pageSize)

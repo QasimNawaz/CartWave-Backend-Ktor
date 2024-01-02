@@ -16,6 +16,7 @@ sealed class PagingBaseResponse<T>(
 
     data class ErrorResponse<T>(
         val success: Boolean = false,
+        val data: T? = null,
         val message: String? = null,
         val pageSize: Int = 0,
         val pageNumber: Int = 0,

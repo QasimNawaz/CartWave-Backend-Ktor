@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
-import store.cartwave.models.Product
+import store.cartwave.models.*
 
 fun ResultRow.rowToProduct(userId: Int): Product {
     val objectMapper = jacksonObjectMapper()
@@ -97,5 +97,43 @@ fun ResultRow.rowToProduct(): Product {
         url = this[ProductTable.url],
         isFavourite = true,
         cartQty = 0
+    )
+}
+
+fun ResultRow.rowToAddress(): Address {
+    return Address(
+        id = this[AddressTable.id],
+        userId = this[AddressTable.userId],
+        address = this[AddressTable.address],
+        isPrimary = this[AddressTable.isPrimary]
+    )
+}
+
+fun ResultRow.rowToOrder(): Order {
+    val orderId = this[OrderTable.id]
+    val orderProducts = OrderProductsTable.select {
+        OrderProductsTable.orderId eq orderId
+    }.map { row ->
+        row.rowToOrderProduct()
+    }
+    return Order(
+        id = this[OrderTable.id],
+        userId = this[OrderTable.userId],
+        orderDate = this[OrderTable.orderDate],
+        shippingAddress = this[OrderTable.shippingAddress],
+        promoCode = this[OrderTable.promoCode],
+        orderStatus = this[OrderTable.orderStatus],
+        totalAmount = this[OrderTable.totalAmount],
+        paymentMethod = this[OrderTable.paymentMethod],
+        products = orderProducts
+    )
+}
+
+fun ResultRow.rowToOrderProduct(): OrderProduct {
+    return OrderProduct(
+        productId = this[OrderProductsTable.productId],
+        title = this[OrderProductsTable.title],
+        price = this[OrderProductsTable.price],
+        quantity = this[OrderProductsTable.quantity]
     )
 }

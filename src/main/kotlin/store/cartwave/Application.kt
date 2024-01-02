@@ -10,20 +10,30 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
+import store.cartwave.repository.address.AddressRepository
+import store.cartwave.repository.address.AddressRepositoryImpl
 import store.cartwave.repository.cart.UserCartRepository
 import store.cartwave.repository.cart.UserCartRepositoryImpl
 import store.cartwave.repository.favourite.FavouriteRepository
 import store.cartwave.repository.favourite.FavouriteRepositoryImpl
+import store.cartwave.repository.order.OrderRepository
+import store.cartwave.repository.order.OrderRepositoryImpl
 import store.cartwave.repository.product.ProductRepository
 import store.cartwave.repository.product.ProductRepositoryImpl
+import store.cartwave.routes.address.addressRoutes
 import store.cartwave.routes.cart.userCartRoutes
 import store.cartwave.routes.favourite.favouriteRoutes
+import store.cartwave.routes.order.orderRoutes
 import store.cartwave.routes.product.productRoutes
 import store.cartwave.security.configureSecurity
+import store.cartwave.service.address.AddressService
+import store.cartwave.service.address.AddressServiceImpl
 import store.cartwave.service.cart.UserCartService
 import store.cartwave.service.cart.UserCartServiceImpl
 import store.cartwave.service.favourite.FavouriteService
 import store.cartwave.service.favourite.FavouriteServiceImpl
+import store.cartwave.service.order.OrderService
+import store.cartwave.service.order.OrderServiceImpl
 import store.cartwave.service.product.ProductService
 import store.cartwave.service.product.ProductServiceImpl
 
@@ -55,5 +65,14 @@ fun Application.module() {
     val userCartService: UserCartService = UserCartServiceImpl()
     val userCartRepository: UserCartRepository = UserCartRepositoryImpl(userCartService)
     userCartRoutes(userCartRepository)
+
+    val orderService: OrderService = OrderServiceImpl()
+    val orderRepository: OrderRepository = OrderRepositoryImpl(orderService)
+    orderRoutes(orderRepository)
+
+    val addressService:AddressService = AddressServiceImpl()
+    val addressRepository:AddressRepository = AddressRepositoryImpl(addressService)
+    addressRoutes(addressRepository)
+
 }
 
