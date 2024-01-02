@@ -22,7 +22,7 @@ application {
 
 ktor {
     fatJar {
-        archiveFileName.set("${project.name}-${version}-docker-image.jar")
+        archiveFileName.set("${project.name}-docker-image-${version.toString().replace(".", "")}-fat.jar")
     }
 }
 
